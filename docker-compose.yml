@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: job-matching-app
+    restart: always
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgress
+      - DATABASE_NAME=job_matching
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  db:
+    image: postgres:13
+    container_name: job-matching-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgress
+      POSTGRES_DB: job_matching
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
