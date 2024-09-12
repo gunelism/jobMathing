@@ -1,10 +1,10 @@
-import { IsString, IsArray, IsInt } from 'class-validator';
+import { IsString, IsArray, IsInt, IsUUID } from 'class-validator';
 
 export class CreateJobSeekerDto {
   @IsString()
   name: string;
 
   @IsArray()
-  @IsInt({ each: true })
-  skills: number[];
+  @IsUUID('all', { each: true })
+  skills: string[];
 }

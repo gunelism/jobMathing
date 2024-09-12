@@ -11,8 +11,8 @@ import { Skill } from './skill.entity';
 
 @Entity()
 export class JobPosting {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column()
   title: string;

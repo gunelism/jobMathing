@@ -1,13 +1,13 @@
-import { IsString, IsArray, IsInt } from 'class-validator';
+import { IsString, IsArray, IsInt, IsUUID } from 'class-validator';
 
 export class CreateJobPostingDto {
   @IsString()
   title: string;
 
   @IsArray()
-  @IsInt({ each: true })
-  requiredSkills: number[];
+  @IsUUID('all', { each: true })
+  requiredSkills: string[];
 
-  @IsInt()
-  companyId: number;
+  @IsUUID()
+  companyId: string;
 }

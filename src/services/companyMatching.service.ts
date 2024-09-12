@@ -13,33 +13,55 @@ export class CompanyMatchingService {
     private readonly jobSeekerRepo: Repository<JobSeeker>,
   ) {}
 
-  async findCandidates(companyId: number) {
+  private calculateMatchPercentage = (
+    requiredSkillIds: Set<string>,
+    seekerSkillIds: Set<string>,
+  ): number => {
+    const matchingSkillIds = [...requiredSkillIds].filter((skillId) =>
+      seekerSkillIds.has(skillId),
+    );
+    return (matchingSkillIds.length / requiredSkillIds.size) * 100;
+  };
+
+  private processJobPosting(jobPosting: JobPosting, jobSeekers: JobSeeker[]) {
+    const requiredSkillIds = new Set(
+      jobPosting.requiredSkills.map((skill) => skill.id),
+    );
+
+    // Find all candidates matching the job posting's skills
+    const matchedCandidates = jobSeekers
+      .map((seeker) => {
+        const seekerSkillIds = new Set(seeker.skills.map((skill) => skill.id));
+        const matchPercentage = this.calculateMatchPercentage(
+          requiredSkillIds,
+          seekerSkillIds,
+        );
+        return matchPercentage >= 51
+          ? { id: seeker.id, name: seeker.name }
+          : null;
+      })
+      .filter((candidate) => candidate !== null);
+
+    return {
+      jobPosting: {
+        id: jobPosting.id,
+        title: jobPosting.title,
+        requiredSkillIds: jobPosting.requiredSkills,
+      },
+      matchedCandidates,
+    };
+  }
+
+  async findCandidates(companyId: string) {
     const jobPostings = await this.jobPostingRepo.find({
       where: { company: { id: companyId } },
       relations: ['requiredSkills'],
     });
+
     const jobSeekers = await this.jobSeekerRepo.find({ relations: ['skills'] });
 
-    return jobPostings.map((jobPosting) => {
-      const matchedCandidates = jobSeekers.filter((seeker) => {
-        const requiredSkillIds = jobPosting.requiredSkills.map(
-          (skill) => skill.id,
-        );
-        const seekerSkillIds = seeker.skills.map((skill) => skill.id);
-
-        const matchingSkillIds = requiredSkillIds.filter((id) =>
-          seekerSkillIds.includes(id),
-        );
-        const matchPercentage =
-          (matchingSkillIds.length / requiredSkillIds.length) * 100;
-
-        return matchPercentage >= 51;
-      });
-
-      return {
-        jobPosting,
-        matchedCandidates,
-      };
-    });
+    return jobPostings.map((jobPosting) =>
+      this.processJobPosting(jobPosting, jobSeekers),
+    );
   }
 }

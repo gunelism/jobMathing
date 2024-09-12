@@ -6,7 +6,7 @@ export class JobMatchingController {
   constructor(private readonly jobMatchingService: JobMatchingService) {}
 
   @Get('/:jobSeekerId')
-  matchJobs(@Param('jobSeekerId') jobSeekerId: number) {
+  matchJobs(@Param('jobSeekerId') jobSeekerId: string) {
     return this.jobMatchingService.match(jobSeekerId);
   }
 }

@@ -8,7 +8,7 @@ export class CompanyMatchingController {
   ) {}
 
   @Get('/:companyId')
-  findCandidates(@Param('companyId') companyId: number) {
+  findCandidates(@Param('companyId') companyId: string) {
     return this.companyMatchingService.findCandidates(companyId);
   }
 }

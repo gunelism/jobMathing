@@ -13,11 +13,20 @@ export class JobMatchingService {
     private readonly jobPostingRepo: Repository<JobPosting>,
   ) {}
 
-  async match(jobSeekerId: number) {
+  async match(jobSeekerId: string) {
     const jobSeeker = await this.jobSeekerRepo.findOne({
       where: { id: jobSeekerId },
       relations: ['skills'],
     });
+
+    if (!jobSeeker) {
+      throw new Error('Job Seeker not found');
+    }
+
+    const seekerSkillIdsSet = new Set(
+      jobSeeker.skills.map((skill) => skill.id),
+    );
+
     const jobPostings = await this.jobPostingRepo.find({
       relations: ['requiredSkills'],
     });
@@ -27,17 +36,20 @@ export class JobMatchingService {
         const requiredSkillIds = jobPosting.requiredSkills.map(
           (skill) => skill.id,
         );
-        const seekerSkillIds = jobSeeker.skills.map((skill) => skill.id);
 
-        const matchingSkillIds = requiredSkillIds.filter((id) =>
-          seekerSkillIds.includes(id),
+        const matchingSkillIds = requiredSkillIds.filter((skillId) =>
+          seekerSkillIdsSet.has(skillId),
         );
+
         const matchPercentage =
           (matchingSkillIds.length / requiredSkillIds.length) * 100;
 
         if (matchPercentage >= 51) {
           return {
-            jobPosting,
+            jobPosting: {
+              id: jobPosting.id,
+              title: jobPosting.title,
+            },
             matchingSkillIds,
             matchPercentage,
           };
@@ -45,6 +57,6 @@ export class JobMatchingService {
 
         return null;
       })
-      .filter((match) => match !== null);
+      .filter(Boolean);
   }
 }
