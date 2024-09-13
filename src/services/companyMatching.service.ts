@@ -28,7 +28,6 @@ export class CompanyMatchingService {
       jobPosting.requiredSkills.map((skill) => skill.id),
     );
 
-    // Find all candidates matching the job posting's skills
     const matchedCandidates = jobSeekers
       .map((seeker) => {
         const seekerSkillIds = new Set(seeker.skills.map((skill) => skill.id));
