@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsInt, IsUUID } from 'class-validator';
+import { IsString, IsArray, IsUUID } from 'class-validator';
 
 export class CreateJobSeekerDto {
   @IsString()
